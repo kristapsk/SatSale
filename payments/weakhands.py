@@ -10,14 +10,15 @@ swap_url = "https://sideshift.ai/api/v1/orders"
 affiliate = "eK590V1Mh"
 
 
-def get_quote(amount_lnbtc):
+def get_quote(amount_lnbtc, to_currency):
     quote_data = {
         "depositMethod": "ln",
-        "settleMethod": "usdtla",
+        "settleMethod": to_currency,
         "affiliateId": affiliate,
         "depositAmount": str(amount_lnbtc),
     }
-    logging.info("Getting quote to swap {:.8f} LN-BTC to USDT".format(amount_lnbtc))
+    logging.info("Getting quote to swap {:.8f} LN-BTC to {}".format(
+        amount_lnbtc, to_currency))
     resp = requests.post(quote_url, json=quote_data)
 
     if resp.status_code != 201:
@@ -28,17 +29,16 @@ def get_quote(amount_lnbtc):
     return resp.json()
 
 
-def get_swap(quote, amount_lnbtc, liquid_address):
-    swap_url = "https://sideshift.ai/api/orders"
+def get_swap(quote, amount_lnbtc, to_currency, dest_address):
     data = {
         "type": "fixed",
         "quoteId": quote["id"],
-        "settleAddress": liquid_address,
+        "settleAddress": dest_address,
         "affiliateId": affiliate,
     }
     logging.info(
-        "Creating order to swap {:.8f} LN-BTC to USDT (liquid: {})".format(
-            amount_lnbtc, liquid_address
+        "Creating order to swap {:.8f} LN-BTC to {} ({})".format(
+            amount_lnbtc, to_currency, dest_address
         )
     )
 
@@ -59,14 +59,14 @@ def pay_swap(node, swap):
     return True
 
 
-def swap_lnbtc_for_lusdt(node, amount_lnbtc, liquid_address):
+def swap_lnbtc_for_stablecoin(node, amount_lnbtc, to_currency, dest_address):
     try:
-        quote = get_quote(amount_lnbtc)
+        quote = get_quote(amount_lnbtc, to_currency)
         if not quote:
             logging.error("Quote failed, not swapping this order.")
             return False
 
-        swap = get_swap(quote, amount_lnbtc, liquid_address)
+        swap = get_swap(quote, amount_lnbtc, to_currency, dest_address)
         if not swap:
             logging.error("Creating order failed, not swapping this payment.")
             return False

@@ -79,11 +79,14 @@ currency_provider = "COINGECKO"   # Supported: COINDESK | COINGECKO
 #lightning_address = None
 #lightning_address_comment = None # Defaults to: "Thank you for your support <3"
 
-# Weak Hands Mode - Automatically swap LN-BTC -> L-USDT using sideshift.ai
-# https://blockstream.com/liquid/
+# Weak Hands Mode - Automatically swap LN-BTC -> stablecoin using sideshift.ai
+# Defaults to L-USDT on Liquid Network (usdtla), https://blockstream.com/liquid/
+# For USDT (ERC-20) on Ethereum, use weakhands_currency = usdtErc20
+# For Binance BUSD, use weakhands_currency = busd
 # Change lnd_macaroon='admin.macaroon', as you will also need to be able to spend with your lnd certificates.
 # This is NOT a trustless swap. Exchange is carried out using sideshift.ai, you bear all associated exchange risks.
-#liquid_address = None
+#weakhands_address = None
+#weakhands_currency = usdtla
 
 # Paynym - Display your paynym on your SatSale donation page
 #paynym = "+royalcell593"

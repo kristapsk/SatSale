@@ -224,11 +224,13 @@ class complete_payment(Resource):
         if status["payment_complete"] != 1:
             return {"message": "You havent paid you stingy bastard"}
 
-        if (config.liquid_address is not None) and (
+        if (config.weakhands_currency is not None and
+            config.weakhands_address is not None) and (
             invoice["method"] in ["lnd", "clightning"]
         ):
-            weakhands.swap_lnbtc_for_lusdt(
-                lightning_node, invoice["btc_value"], config.liquid_address
+            weakhands.swap_lnbtc_for_stablecoin(
+                lightning_node, invoice["btc_value"],
+                config.weakhands_currency, config.weakhands_address
             )
 
         # Call webhook to confirm payment with merchant
