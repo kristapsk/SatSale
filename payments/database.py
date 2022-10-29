@@ -2,7 +2,7 @@ import sqlite3
 import logging
 
 
-def create_database(name="database.db"):
+def create_database(name: str = "database.db") -> None:
     with sqlite3.connect(name) as conn:
         logging.info("Creating new {}...".format(name))
         conn.execute(
@@ -11,26 +11,32 @@ def create_database(name="database.db"):
     return
 
 
-def _get_database_schema_version(name="database.db"):
+def _get_database_schema_version(name: str = "database.db"):
     with sqlite3.connect(name) as conn:
-        return conn.execute("SELECT version FROM schema_version").fetchone()[0]
+        return conn.execute("SELECT version FROM schema_version").fetchone(
+            )[0]
 
 
-def _set_database_schema_version(version, name="database.db"):
+def _set_database_schema_version(version: int,
+                                 name: str = "database.db") -> None:
     with sqlite3.connect(name) as conn:
-        conn.execute("UPDATE schema_version SET version = {}".format(version))
+        conn.execute("UPDATE schema_version SET version = {}".format(
+            version))
 
 
-def _log_migrate_database(from_version, to_version, message):
+def _log_migrate_database(from_version: int, to_version: int,
+                          message: str) -> None:
     logging.info(
-        "Migrating database from {} to {}: {}".format(from_version, to_version, message)
+        "Migrating database from {} to {}: {}".format(
+            from_version, to_version, message)
     )
 
 
-def migrate_database(name="database.db"):
+def migrate_database(name: str = "database.db") -> None:
     with sqlite3.connect(name) as conn:
         version_table_exists = conn.execute(
-            "SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'schema_version'"
+            "SELECT name FROM sqlite_master "
+            "WHERE type = 'table' AND name = 'schema_version'"
         ).fetchone()
         if version_table_exists:
             schema_version = _get_database_schema_version(name)
@@ -74,7 +80,7 @@ def migrate_database(name="database.db"):
         )
 
 
-def write_to_database(invoice, name="database.db"):
+def write_to_database(invoice: dict, name: str = "database.db") -> None:
     with sqlite3.connect(name) as conn:
         cur = conn.cursor()
         cur.execute(
@@ -94,7 +100,7 @@ def write_to_database(invoice, name="database.db"):
     return
 
 
-def load_invoices_from_db(where, name="database.db"):
+def load_invoices_from_db(where: str, name: str = "database.db"):
     with sqlite3.connect(name) as conn:
         conn.row_factory = sqlite3.Row
         cur = conn.cursor()
@@ -102,7 +108,7 @@ def load_invoices_from_db(where, name="database.db"):
     return rows
 
 
-def load_invoice_from_db(uuid, name="database.db"):
+def load_invoice_from_db(uuid: str, name: str = "database.db"):
     rows = load_invoices_from_db("uuid='{}'".format(uuid), name)
     if len(rows) > 0:
         return [dict(ix) for ix in rows][0]
@@ -110,8 +116,9 @@ def load_invoice_from_db(uuid, name="database.db"):
         return None
 
 
-def add_generated_address(index, address, xpub):
-    with sqlite3.connect("database.db") as conn:
+def add_generated_address(index: int, address: str, xpub: str,
+                          name: str = "database.db") -> None:
+    with sqlite3.connect(name) as conn:
         cur = conn.cursor()
         cur.execute(
             "INSERT INTO addresses (n, address, xpub) VALUES (?,?,?)",
@@ -124,8 +131,8 @@ def add_generated_address(index, address, xpub):
     return
 
 
-def get_next_address_index(xpub):
-    with sqlite3.connect("database.db") as conn:
+def get_next_address_index(xpub: str, name: str = "database.db") -> int:
+    with sqlite3.connect(name) as conn:
         conn.row_factory = sqlite3.Row
         cur = conn.cursor()
         addresses = cur.execute(
