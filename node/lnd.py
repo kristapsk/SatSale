@@ -166,8 +166,7 @@ class lnd(node.node):
             unconf_paid = Decimal(0)
         else:
             # Store amount paid and convert to BTC units
-            conf_paid = Decimal(
-                (int(invoice_status["amtPaidSat"]) + 1) / (10 ** 8))
+            conf_paid = Decimal(invoice_status["amtPaidSat"]) / Decimal(10 ** 8)
             unconf_paid = Decimal(0)
 
         return conf_paid, unconf_paid

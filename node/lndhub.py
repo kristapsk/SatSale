@@ -75,7 +75,7 @@ class lndhub(node.node):
         invoice = self.lndhub.lookup_invoice(rhash)
 
         if invoice["ispaid"]:
-            conf_paid = Decimal((int(invoice["amt"]) + 1) / (10 ** 8))
+            conf_paid = Decimal(invoice["amt"]) / Decimal(10 ** 8)
             unconf_paid = Decimal(0)
         else:
             conf_paid = Decimal(0)
