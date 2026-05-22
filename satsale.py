@@ -42,8 +42,12 @@ CORS(app)
 if os.path.exists("SatSale_API_key"):
     with open("SatSale_API_key", "r") as f:
         app.config["SECRET_KEY"] = f.read().strip()
+    if os.stat("SatSale_API_key").st_mode & 0o077:
+        os.chmod("SatSale_API_key", 0o600)
 else:
-    with open("SatSale_API_key", "w") as f:
+    fd = os.open("SatSale_API_key",
+                 os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+    with os.fdopen(fd, "w") as f:
         app.config["SECRET_KEY"] = os.urandom(64).hex()
         f.write(app.config["SECRET_KEY"])
 
