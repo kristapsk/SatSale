@@ -4,7 +4,6 @@ import json
 import codecs
 import time
 import requests
-import logging
 
 
 def hook(satsale_secret, invoice, order_id):
@@ -13,8 +12,6 @@ def hook(satsale_secret, invoice, order_id):
     # Calculate a secret that is required to send back to the
     # woocommerce gateway, proving we did not modify id nor amount.
     secret_seed = str(int(100 * float(invoice["base_value"]))).encode("utf-8")
-    logging.info("Secret seed: {}".format(secret_seed))
-
     secret = hmac.new(key, secret_seed, hashlib.sha256).hexdigest()
 
     # The main signature  which proves we have paid, and very recently!
