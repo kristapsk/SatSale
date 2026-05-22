@@ -33,6 +33,9 @@ def hook(satsale_secret, invoice, order_id):
     }
 
     # Send the webhook response, confirming the payment with woocommerce.
-    response = requests.get(invoice["webhook"], params=params, headers=headers)
+    response = requests.get(
+        invoice["webhook"], params=params, headers=headers,
+        timeout=10, allow_redirects=False,
+    )
 
     return response
