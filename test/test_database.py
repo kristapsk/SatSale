@@ -37,7 +37,7 @@ def test_database_addresses() -> None:
 
 def test_database_invoices() -> None:
     _create_test_db()
-    assert (len(load_invoices_from_db("1", DB_NAME)) == 0)
+    assert (len(load_invoices_from_db("1", name=DB_NAME)) == 0)
     invoice_uuid = str(uuid.uuid4().hex)
     write_to_database({
         "uuid": invoice_uuid,
@@ -53,7 +53,7 @@ def test_database_invoices() -> None:
         "bolt11_invoice": None,
         "message": "Keep BUIDLing!"
     }, DB_NAME)
-    invoices = load_invoices_from_db("1", DB_NAME)
+    invoices = load_invoices_from_db("1", name=DB_NAME)
     invoice0 = load_invoice_from_db(invoice_uuid, DB_NAME)
     assert (len(invoices) == 1)
     assert (invoice0 is not None)

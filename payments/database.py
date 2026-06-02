@@ -23,8 +23,7 @@ def _get_database_schema_version(name: str = DEFAULT_DATABASE) -> int:
 def _set_database_schema_version(version: int,
                                  name: str = DEFAULT_DATABASE) -> None:
     with sqlite3.connect(name) as conn:
-        conn.execute("UPDATE schema_version SET version = {}".format(
-            version))
+        conn.execute("UPDATE schema_version SET version = ?", (version,))
 
 
 def _log_migrate_database(from_version: int, to_version: int,
@@ -73,7 +72,7 @@ def migrate_database(name: str = DEFAULT_DATABASE) -> None:
 
     if schema_version < 5:
         _log_migrate_database(4, 5, "Split off bolt11_invoice from address in payments table")
-        rows = load_invoices_from_db("1", name)
+        rows = load_invoices_from_db("1", name=name)
         lightning_uuids = []
         for row in rows:
             if row["method"] in ["lightning", "clightning", "lnd"]:
@@ -87,7 +86,7 @@ def migrate_database(name: str = DEFAULT_DATABASE) -> None:
                 conn.execute(
                     "UPDATE payments "
                     "SET bolt11_invoice = address, address = NULL "
-                    "WHERE uuid = '{}'".format(uuid))
+                    "WHERE uuid = ?", (uuid,))
         _set_database_schema_version(5, name)
 
     if schema_version < 6:
@@ -133,17 +132,18 @@ def write_to_database(invoice: dict, name: str = DEFAULT_DATABASE) -> None:
     return
 
 
-def load_invoices_from_db(where: str, name: str = DEFAULT_DATABASE) -> list:
+def load_invoices_from_db(where_sql: str, params: tuple = (),
+                          name: str = DEFAULT_DATABASE) -> list:
     with sqlite3.connect(name) as conn:
         conn.row_factory = sqlite3.Row
         cur = conn.cursor()
         rows = cur.execute(
-            "SELECT * FROM payments WHERE {}".format(where)).fetchall()
+            "SELECT * FROM payments WHERE " + where_sql, params).fetchall()
     return rows
 
 
 def load_invoice_from_db(uuid: str, name: str = "database.db") -> dict:
-    rows = load_invoices_from_db("uuid='{}'".format(uuid), name)
+    rows = load_invoices_from_db("uuid = ?", (uuid,), name=name)
     if len(rows) > 0:
         return [dict(ix) for ix in rows][0]
     else:
@@ -170,8 +170,8 @@ def get_next_address_index(xpub: str, name: str = DEFAULT_DATABASE) -> int:
         conn.row_factory = sqlite3.Row
         cur = conn.cursor()
         addresses = cur.execute(
-            "SELECT n FROM addresses WHERE xpub='{}' "
-            "ORDER BY n DESC LIMIT 1".format(xpub)
+            "SELECT n FROM addresses WHERE xpub = ? "
+            "ORDER BY n DESC LIMIT 1", (xpub,)
         ).fetchall()
 
     if len(addresses) == 0:
